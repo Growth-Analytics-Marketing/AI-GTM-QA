@@ -426,7 +426,7 @@ textarea{overflow:hidden}
     if(!db||readOnly) return;
     const lab=prompt("Name for the new run (e.g. Round 2 · after fixes)"); if(!lab) return;
     const n=runList().length+1, id="run-"+n;
-    await db.doc("runs/"+id).set({id,label:lab,order:n,date:new Date().toISOString().slice(0,10),browser:navigator.userAgent.match(/Chrome\/[\d.]+|Safari\/[\d.]+|Firefox\/[\d.]+/)?.[0]||"",tester:"",gtmVersion:"",previewEnv:"",workspace:"GAM - Mixpanel (131)",notes:""});
+    await db.doc("runs/"+id).set({id,label:lab,order:n,date:new Date().toISOString().slice(0,10),browser:navigator.userAgent.match(/Chrome\/[\d.]+|Safari\/[\d.]+|Firefox\/[\d.]+/)?.[0]||"",tester:"",gtmVersion:"",previewEnv:"",workspace:(meta.config&&meta.config.workspace)||"",notes:""});
     currentRun=id;
   };
 
