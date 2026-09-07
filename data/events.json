@@ -1,0 +1,63 @@
+{
+ "page-viewed": {
+  "name": "Page Viewed",
+  "sheetName": "Page Viewed",
+  "journey": "J1 Page view",
+  "order": 1,
+  "tag": "101 \u00b7 Mixpanel - SDK & initialize",
+  "tagId": 101,
+  "triggers": [
+   {
+    "name": "All Pages",
+    "id": 2147479553
+   }
+  ],
+  "trigger": "Fires on: All Pages. Registers $device_id and tracking_version as super properties; cms_content_id only when the page has one.",
+  "description": "User views a page.",
+  "inLexicon": true,
+  "finalName": "",
+  "specStatus": "implemented",
+  "specNote": "",
+  "note": "",
+  "looms": {}
+ },
+ "search": {
+  "name": "Search",
+  "sheetName": "Site Search",
+  "journey": "J2 Search",
+  "order": 2,
+  "tag": "102 \u00b7 Mixpanel - Search",
+  "tagId": 102,
+  "triggers": [
+   {
+    "name": "History Change \u2013 Site Search",
+    "id": 201
+   }
+  ],
+  "trigger": "Fires on: History Change where the `query` param is non-empty and differs from the last keyword. Waits for the results count before sending.",
+  "description": "User runs a site search.",
+  "inLexicon": true,
+  "finalName": "",
+  "specStatus": "implemented",
+  "specNote": "",
+  "note": "",
+  "looms": {}
+ },
+ "user-profile": {
+  "name": "User profile",
+  "sheetName": "$user",
+  "journey": "User properties",
+  "order": 90,
+  "tag": "101 \u00b7 people.set",
+  "tagId": null,
+  "triggers": [],
+  "trigger": "Set with identify() + people.set() on form submit.",
+  "description": "Profile properties.",
+  "inLexicon": true,
+  "finalName": "",
+  "specStatus": "implemented",
+  "specNote": "",
+  "note": "",
+  "looms": {}
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "TC-001": {
+  "event": "page-viewed",
+  "kind": "trigger",
+  "title": "Fires on every page load",
+  "expected": "One Page Viewed per full page load",
+  "page": "https://www.example.com/",
+  "steps": "Load the homepage with Tag Assistant attached",
+  "prop": "",
+  "disagree": false
+ },
+ "TC-002": {
+  "event": "page-viewed",
+  "kind": "property",
+  "title": "",
+  "expected": "Present on content pages, omitted elsewhere",
+  "page": "https://www.example.com/article",
+  "steps": "",
+  "prop": "cms_content_id",
+  "disagree": true
+ },
+ "TC-003": {
+  "event": "page-viewed",
+  "kind": "receipt",
+  "title": "Page Viewed arrives in Mixpanel",
+  "expected": "Row visible in Events with the properties",
+  "page": "https://www.example.com/",
+  "steps": "Open Mixpanel \u2192 Events",
+  "prop": "",
+  "disagree": false
+ },
+ "TC-004": {
+  "event": "search",
+  "kind": "trigger",
+  "title": "Search with Enter",
+  "expected": "Search fires once with search_term",
+  "page": "https://www.example.com/search",
+  "steps": "Type 'tariffs', press Enter",
+  "prop": "",
+  "disagree": false
+ },
+ "TC-005": {
+  "event": "search",
+  "kind": "negative",
+  "title": "Same term submitted again",
+  "expected": "No second Search (last-keyword guard)",
+  "page": "https://www.example.com/search",
+  "steps": "Submit 'tariffs' twice",
+  "prop": "",
+  "disagree": false
+ },
+ "TC-006": {
+  "event": "search",
+  "kind": "property",
+  "title": "",
+  "expected": "Equals the count rendered on the page",
+  "page": "https://www.example.com/search",
+  "steps": "",
+  "prop": "number_of_results",
+  "disagree": true
+ },
+ "TC-007": {
+  "event": "search",
+  "kind": "receipt",
+  "title": "Search arrives in Mixpanel",
+  "expected": "Row visible with search_term and number_of_results",
+  "page": "https://www.example.com/search",
+  "steps": "",
+  "prop": "",
+  "disagree": false
+ }
+}

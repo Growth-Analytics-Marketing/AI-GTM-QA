@@ -1,0 +1,142 @@
+{
+ "run-1__TC-001": {
+  "run": "run-1",
+  "case": "TC-001",
+  "status": "pass",
+  "actual": "Fired once per load.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-1__TC-002": {
+  "run": "run-1",
+  "case": "TC-002",
+  "status": "fail",
+  "actual": "Sent as the string \"undefined\" on the homepage.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-1__TC-003": {
+  "run": "run-1",
+  "case": "TC-003",
+  "status": "pass",
+  "actual": "Visible.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-1__TC-004": {
+  "run": "run-1",
+  "case": "TC-004",
+  "status": "pass",
+  "actual": "search_term = tariffs",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-1__TC-005": {
+  "run": "run-1",
+  "case": "TC-005",
+  "status": "pass",
+  "actual": "No second event.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-1__TC-006": {
+  "run": "run-1",
+  "case": "TC-006",
+  "status": "fail",
+  "actual": "Not sent: the count renders after the trigger fires.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-1__TC-007": {
+  "run": "run-1",
+  "case": "TC-007",
+  "status": "pass",
+  "actual": "Visible without number_of_results.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-10"
+ },
+ "run-2__TC-001": {
+  "run": "run-2",
+  "case": "TC-001",
+  "status": "pass",
+  "actual": "Fired once per load.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ },
+ "run-2__TC-002": {
+  "run": "run-2",
+  "case": "TC-002",
+  "status": "pass",
+  "actual": "Omitted on the homepage, real id on articles (guard added).",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ },
+ "run-2__TC-003": {
+  "run": "run-2",
+  "case": "TC-003",
+  "status": "pass",
+  "actual": "Visible.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ },
+ "run-2__TC-004": {
+  "run": "run-2",
+  "case": "TC-004",
+  "status": "pass",
+  "actual": "search_term = tariffs",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ },
+ "run-2__TC-005": {
+  "run": "run-2",
+  "case": "TC-005",
+  "status": "pass",
+  "actual": "No second event.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ },
+ "run-2__TC-006": {
+  "run": "run-2",
+  "case": "TC-006",
+  "status": "pass",
+  "actual": "number_of_results = 42, matches the page (tag waits for the count).",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ },
+ "run-2__TC-007": {
+  "run": "run-2",
+  "case": "TC-007",
+  "status": "pass",
+  "actual": "Visible with both properties.",
+  "evidence": "",
+  "gtmShot": "",
+  "mpShot": "",
+  "tested": "2026-01-12"
+ }
+}

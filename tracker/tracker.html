@@ -1,0 +1,493 @@
+<meta charset="utf-8">
+<title>Tracking QA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F5F4; --panel:#FFFFFF; --ink:#1A2326; --muted:#5C6B70; --line:#D7DEDC; --line-soft:#E8EDEB;
+  --accent:#0F6E6A; --accent-ink:#FFFFFF; --accent-soft:#DDEFED;
+  --pass:#1F7A3A; --pass-soft:#DDF2E3; --fail:#B42323; --fail-soft:#F9DEDE; --warn:#9A5B00; --warn-soft:#FBEBD0; --none:#6B7A80; --none-soft:#E6EBEC;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141A1C; --panel:#1C2427; --ink:#E6ECEC; --muted:#9AAAAE; --line:#2F3B3F; --line-soft:#263134;
+  --accent:#4FB8B2; --accent-ink:#0E1A1A; --accent-soft:#1E3A39;
+  --pass:#5CCB7E; --pass-soft:#1B3524; --fail:#F08A8A; --fail-soft:#42201F; --warn:#F0B95B; --warn-soft:#3F2E12; --none:#9AAAAE; --none-soft:#2A3436;
+}}
+:root[data-theme="dark"]{
+  --bg:#141A1C; --panel:#1C2427; --ink:#E6ECEC; --muted:#9AAAAE; --line:#2F3B3F; --line-soft:#263134;
+  --accent:#4FB8B2; --accent-ink:#0E1A1A; --accent-soft:#1E3A39;
+  --pass:#5CCB7E; --pass-soft:#1B3524; --fail:#F08A8A; --fail-soft:#42201F; --warn:#F0B95B; --warn-soft:#3F2E12; --none:#9AAAAE; --none-soft:#2A3436;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans)}
+a{color:var(--accent)}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 24px 80px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+.sub code,.meta code{font-family:var(--mono);font-size:12.5px}
+.totals{display:flex;gap:8px;flex-wrap:wrap}
+.tot{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 10px;min-width:74px}
+.tot b{display:block;font-size:18px;font-variant-numeric:tabular-nums;line-height:1.1}
+.tot span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.runbar{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.runbar label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:4px}
+.runbar select.run{padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-weight:500;min-width:220px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 16px;font-size:12.5px}
+.meta div span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.meta input{width:100%;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;font-size:12.5px;border-radius:4px;padding:2px 4px}
+.meta input:hover{border-color:var(--line)} .meta input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+.runbar .actions{display:flex;flex-direction:column;gap:6px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.toolbar input[type=search]{flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit}
+.btn{padding:7px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;font:inherit;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip{padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:12px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.journey{margin:26px 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;align-items:center;gap:10px}
+.journey::after{content:"";flex:1;height:1px;background:var(--line)}
+.event{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.ev-head{display:grid;grid-template-columns:20px 1fr auto;gap:12px;align-items:center;padding:12px 14px;cursor:pointer;user-select:none}
+.ev-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.caret{width:0;height:0;border-left:6px solid var(--muted);border-top:5px solid transparent;border-bottom:5px solid transparent;transition:transform .15s;margin-left:4px}
+.open .caret{transform:rotate(90deg)}
+.ev-name{font-family:var(--mono);font-size:14px;font-weight:500}
+.ev-meta{color:var(--muted);font-size:12px;margin-top:2px}
+.ev-meta code{font-family:var(--mono)}
+.ev-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.pass{background:var(--pass-soft);color:var(--pass)} .pill.fail{background:var(--fail-soft);color:var(--fail)}
+.pill.blocked{background:var(--warn-soft);color:var(--warn)} .pill.notrun{background:var(--none-soft);color:var(--none)}
+.pill.partial{background:var(--warn-soft);color:var(--warn)}
+.pill.ghost{opacity:.65;border:1px dashed currentColor;background:transparent}
+.ev-body{display:none;border-top:1px solid var(--line-soft);padding:6px 14px 14px}
+.open .ev-body{display:block}
+.gtm{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;margin:10px 0 4px;align-items:center}
+.gtm .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.gtm a{font-family:var(--mono);font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:4px;padding:1px 6px;background:var(--bg)}
+.gtm a:hover{border-color:var(--accent)}
+.trigger-box{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--bg);border-radius:6px;padding:8px 10px;margin:6px 0;white-space:pre-wrap}
+.sect{margin-top:12px}
+.sect h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 6px;font-weight:600}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{text-align:left;font-size:11px;color:var(--muted);font-weight:500;padding:4px 8px;border-bottom:1px solid var(--line-soft)}
+td{padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono);font-size:11.5px;color:var(--muted);width:64px}
+td.id small{display:block;font-family:var(--sans);font-size:10.5px;margin-top:2px}
+td.title{width:30%}
+td.title .steps{color:var(--muted);font-size:12px;margin-top:2px}
+td.exp{color:var(--muted);font-size:12.5px}
+td.prop{font-family:var(--mono);font-size:12.5px}
+td.stat{width:118px} td.act{width:22%} td.ev{width:118px}
+.stat .prev{font-size:10.5px;color:var(--muted);margin-top:3px;white-space:nowrap}
+select,textarea,input.link{width:100%;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;font-size:12.5px;border-radius:4px;padding:3px 4px}
+select{appearance:none;-webkit-appearance:none;font-weight:500;cursor:pointer}
+select.pass{background:var(--pass-soft);color:var(--pass)} select.fail{background:var(--fail-soft);color:var(--fail)}
+select.blocked{background:var(--warn-soft);color:var(--warn)} select.notrun{background:var(--none-soft);color:var(--none)}
+textarea{resize:vertical;min-height:26px;line-height:1.35}
+textarea:hover,input.link:hover{border-color:var(--line)} textarea:focus,input.link:focus,select:focus{outline:none;border-color:var(--accent);background:var(--panel)}
+.ro select,.ro textarea,.ro input{pointer-events:none}
+.shots{display:flex;gap:4px;margin-bottom:4px}
+.shot{width:52px;height:34px;border:1px solid var(--line);border-radius:3px;background:var(--bg);object-fit:cover;cursor:zoom-in;display:block}
+.shot-empty{width:52px;height:34px;border:1px dashed var(--line);border-radius:3px;font-size:9px;color:var(--muted);display:flex;align-items:center;justify-content:center;text-transform:uppercase;letter-spacing:.04em}
+.loom{margin-top:14px}
+.loom-in{display:flex;gap:8px;align-items:center}
+.loom-in label{font-size:12px;color:var(--muted);white-space:nowrap}
+.loom-in input{flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:12.5px}
+.loom iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:6px;margin-top:8px;background:#000}
+.notice{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:12px 14px;color:var(--muted);margin-bottom:14px}
+.foot{margin-top:28px;color:var(--muted);font-size:12px}
+.tag{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.disagree{color:var(--warn);font-weight:500}
+.saving{font-size:12px;color:var(--muted)}
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out;padding:24px}
+#lightbox img{max-width:100%;max-height:100%;border-radius:6px;background:#fff}
+#lightbox.on{display:flex}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tab{background:transparent;border:0;border-bottom:2px solid transparent;padding:8px 14px;font:inherit;font-weight:500;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px 14px;font-size:12.5px;margin:8px 0}
+.names div span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.names code{font-family:var(--mono);font-size:12px}
+.names input{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-family:var(--mono);font-size:12px;border-radius:4px;padding:3px 6px}
+td.pname{font-family:var(--mono);font-size:12.5px;width:19%} td.pname small{display:block;font-family:var(--sans);font-size:11px;color:var(--muted)}
+td.src{font-size:12px;color:var(--muted);width:17%}
+td.fin{width:14%} td.fin input{font-family:var(--mono);font-size:12px}
+td.cur{width:96px;white-space:nowrap} td.cur small{display:block;font-size:10.5px;color:var(--muted)}
+.mm{font-size:10.5px;color:var(--warn);font-weight:500}
+.lexlist{font-family:var(--mono);font-size:12px;line-height:1.7}
+.sel{padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px}
+.flat{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+table.cases{min-width:760px}
+td.ev{min-width:118px}
+.syncbox{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.synclist{font-family:var(--mono);font-size:12px;line-height:1.6;max-height:260px;overflow:auto;background:var(--bg);border-radius:6px;padding:8px 10px}
+tr.jrow td{background:var(--bg);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 8px 4px;font-weight:600}
+td.evcell .mono{font-family:var(--mono);font-size:12px} td.evcell small{display:block;font-size:10.5px;color:var(--muted)}
+textarea{overflow:hidden}
+.plan-cases td.title{width:38%}
+.names input,.names textarea,.fin input,#plantree textarea{border-color:var(--line);background:var(--bg)}
+.addrow{margin-top:8px;display:flex;gap:8px}
+@media (max-width:900px){td.exp,th.exp{display:none} td.act{width:26%} .runbar{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){.caret{transition:none}}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <h1 id="h1">Tracking QA</h1>
+    <p class="sub"><span id="subcfg">GTM container → Mixpanel project.</span> One block per event; open it for the firing rules, the linked tags and triggers, and every property. Results are kept per test run so rounds can be compared.</p>
+  </div>
+  <div class="totals" id="totals"></div>
+</header>
+
+<div class="notice" id="notice" hidden></div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" data-tab="qa" aria-selected="true">QA runs</button>
+  <button class="tab" role="tab" data-tab="plan" aria-selected="false">Tracking plan</button>
+</nav>
+
+<div id="view-plan" hidden>
+  <div class="notice">The implementation spec: every event with its final name, description, triggers and properties, plus the user profile. <b>Current status</b> is the latest recorded test result across runs; the QA runs tab is the point-in-time record. Rows marked <span class="disagree">mismatch</span> differ between the tracking sheet and GTM: fill in <b>Final</b> to decide. <b>Sync to Lexicon</b> (bottom of the page) pushes the final names and descriptions to the Mixpanel Lexicon.</div>
+  <div class="toolbar"><input type="search" id="pq" placeholder="Filter events or properties"><button class="chip" data-pf="all" aria-pressed="true">All</button><button class="chip" data-pf="mismatch" aria-pressed="false">Mismatches</button><button class="chip" data-pf="undecided" aria-pressed="false">Undecided</button><button class="btn" id="pexpand">Expand all</button><button class="btn" id="pcollapse">Collapse all</button></div>
+  <div id="plantree"></div>
+  <section class="event open"><div class="ev-head" data-plain role="button" tabindex="0"><span class="caret"></span><div><div class="ev-name" style="font-family:var(--sans)">Lexicon sync</div><div class="ev-meta" id="lexmeta"></div></div></div><div class="ev-body" id="lexbody"></div></section>
+</div>
+
+<div id="view-qa">
+<div class="runbar">
+  <div>
+    <label for="run">Test run</label>
+    <select class="run" id="run"></select>
+    <div class="tag" id="compare" style="margin-top:6px"></div>
+  </div>
+  <div class="meta" id="runmeta"></div>
+  <div class="actions"><button class="btn" id="newrun">New run…</button></div>
+</div>
+
+<section class="event tasks open" id="tasks">
+  <div class="ev-head" role="button" tabindex="0" aria-expanded="true" data-tasks-head>
+    <span class="caret"></span>
+    <div><div class="ev-name" style="font-family:var(--sans)">Outstanding tasks</div><div class="ev-meta">Fixes and follow-ups from the test rounds. Mark done when resolved; done items stay for the record.</div></div>
+    <div class="ev-right" id="taskcount"></div>
+  </div>
+  <div class="ev-body" style="padding-top:8px">
+    <table class="tasktable"><thead><tr><th style="width:36px">#</th><th>Task</th><th style="width:120px">Owner</th><th style="width:150px">Event</th><th style="width:96px">Status</th><th style="width:22%">Notes</th></tr></thead><tbody id="tasklist"></tbody></table>
+    <div style="margin-top:8px"><button class="btn" id="addtask">Add task</button></div>
+  </div>
+</section>
+
+<div class="toolbar">
+  <input type="search" id="q" placeholder="Filter by test ID, event, property or text">
+  <select class="sel" id="fevent"><option value="">All events</option></select>
+  <select class="sel" id="fkind"><option value="">All case types</option><option value="trigger">Fires when</option><option value="negative">Must not fire</option><option value="property">Property</option><option value="receipt">Mixpanel receipt</option><option value="config">Configuration</option></select>
+  <button class="chip" data-f="all" aria-pressed="true">All</button>
+  <button class="chip" data-f="pass" aria-pressed="false">Passed</button>
+  <button class="chip" data-f="fail" aria-pressed="false">Failed</button>
+  <button class="chip" data-f="blocked" aria-pressed="false">Blocked</button>
+  <button class="chip" data-f="notrun" aria-pressed="false">Not run</button>
+  <button class="chip" data-f="changed" aria-pressed="false">Changed vs previous</button>
+  <button class="chip" data-f="disagree" aria-pressed="false">Sheet ≠ GTM</button>
+  <span class="saving" id="saving"></span>
+</div>
+
+<div id="tree"></div>
+
+<p class="foot">Status meanings: <b>Pass</b> tag fired, payload matched, event arrived in Mixpanel · <b>Fail</b> any of those did not · <b>Blocked</b> could not be tested · <b>Not run</b>. Rows marked <span class="disagree">Sheet ≠ GTM</span> are requirements where the tracking plan and the GTM implementation disagree. Evidence: a link (Loom timestamp, Drive file) plus thumbnails of the Tag Assistant view and the Mixpanel event. Tag and trigger links open the GTM workspace.</p>
+</div>
+</div>
+<div id="lightbox"><img alt="Evidence screenshot"></div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const STATUSES=[["notrun","Not run"],["pass","Pass"],["fail","Fail"],["blocked","Blocked"]];
+  const KINDS=[["trigger","Fires when"],["negative","Must not fire"],["property","Properties"],["receipt","Mixpanel receipt"],["config","Configuration"]];
+  // GTM deep-link base, e.g. https://tagmanager.google.com/#/container/accounts/<account>/containers/<container>/workspaces/<workspace>/
+  // Set it in meta/config: {"gtmBase": "...", "title": "...", "subtitle": "..."} (or window.__CONFIG for the local file).
+  let GTM=(window.__CONFIG&&window.__CONFIG.gtmBase)||"";
+  function applyConfig(c){ if(!c) return; if(c.gtmBase) GTM=c.gtmBase.replace(/\/?$/,"/"); if(c.title){ document.title=c.title; const h=document.getElementById("h1"); if(h) h.textContent=c.title; } if(c.subtitle){ const e=document.getElementById("subcfg"); if(e) e.textContent=c.subtitle; } }
+  applyConfig(window.__CONFIG);
+  const RUN_FIELDS=[["date","Tested on"],["browser","Browser"],["tester","Tester"],["gtmVersion","Container version"],["previewEnv","Preview env"],["workspace","Workspace"],["notes","Notes"]];
+  let events={}, cases={}, runs={}, results={}, db=null, readOnly=false, filter="all", query="", currentRun=null;
+  const openSet=new Set();
+  try{ (JSON.parse(localStorage.getItem("tqa-open")||"[]")).forEach(x=>openSet.add(x)); }catch(e){}
+  const $=s=>document.querySelector(s);
+  const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const label={pass:"Pass",fail:"Fail",blocked:"Blocked",notrun:"Not run",partial:"In progress"};
+
+  function loomEmbed(u){ const m=String(u||"").match(/loom\.com\/(?:share|embed)\/([a-f0-9]{32})/i); return m?"https://www.loom.com/embed/"+m[1]:null; }
+  function runList(){ return Object.values(runs).sort((a,b)=>(a.order||0)-(b.order||0)); }
+  function prevRun(){ const l=runList(); const i=l.findIndex(r=>r.id===currentRun); return i>0?l[i-1].id:null; }
+  function res(run,id){ return results[run+"__"+id]||{status:"notrun",actual:"",evidence:"",gtmShot:"",mpShot:"",tested:""}; }
+  function rollup(list){
+    if(!list.length) return "notrun";
+    const s=new Set(list.map(c=>res(currentRun,c.id).status||"notrun"));
+    if(s.has("fail")) return "fail"; if(s.has("blocked")) return "blocked";
+    if(s.size===1&&s.has("pass")) return "pass"; if(s.has("pass")) return "partial"; return "notrun";
+  }
+  function matches(c,ev){
+    const r=res(currentRun,c.id), p=prevRun()?res(prevRun(),c.id):null;
+    if(filter==="fail"&&r.status!=="fail") return false;
+    if(filter==="blocked"&&r.status!=="blocked") return false;
+    if(filter==="notrun"&&(r.status||"notrun")!=="notrun") return false;
+    if(filter==="changed"&&(!p||p.status===r.status)) return false;
+    if(filter==="disagree"&&!c.disagree) return false;
+    if(query){ const hay=(ev.name+" "+c.id+" "+c.title+" "+(c.prop||"")).toLowerCase(); if(!hay.includes(query)) return false; }
+    return true;
+  }
+  function shotCell(r){
+    const one=(v,lab)=>v?`<img class="shot" src="${esc(v)}" alt="${lab} screenshot" data-full="${esc(v)}" title="${lab}">`:`<div class="shot-empty" title="${lab} screenshot (added by the tester)">${lab}</div>`;
+    return `<div class="shots">${one(r.gtmShot,"GTM")}${one(r.mpShot,"MP")}</div>`;
+  }
+
+  function renderRunBar(){
+    const l=runList(); const sel=$("#run");
+    sel.innerHTML=l.map(r=>`<option value="${esc(r.id)}" ${r.id===currentRun?"selected":""}>${esc(r.label)}${r.date?" · "+esc(r.date):""}</option>`).join("");
+    const p=prevRun(); $("#compare").textContent=p?"Comparing with "+(runs[p].label||p):"First run, nothing to compare";
+    const r=runs[currentRun]||{};
+    $("#runmeta").innerHTML=`<div><span>Container</span><code>${esc((meta.config&&meta.config.container)||r.container||"—")}</code></div>`+RUN_FIELDS.map(([k,lab])=>`<div><span>${lab}</span><input data-runf="${k}" value="${esc(r[k]||"")}" placeholder="—" ${readOnly?"readonly":""}></div>`).join("");
+  }
+
+  let fevent="", fkind="";
+  function render(){
+    if(!currentRun&&runList().length) currentRun=runList().slice(-1)[0].id;
+    renderRunBar();
+    const evs=Object.values(events).sort((a,b)=>(a.order||0)-(b.order||0));
+    const all=Object.values(cases);
+    const counts={pass:0,fail:0,blocked:0,notrun:0};
+    all.forEach(c=>{const s=res(currentRun,c.id).status||"notrun"; counts[s]=(counts[s]||0)+1});
+    $("#totals").innerHTML=[["Cases",all.length],["Pass",counts.pass],["Fail",counts.fail],["Blocked",counts.blocked],["Not run",counts.notrun]]
+      .map(([k,v])=>`<div class="tot"><b>${v}</b><span>${k}</span></div>`).join("");
+    const fe=$("#fevent"); const cur=fe.value; fe.innerHTML=`<option value="">All events</option>`+evs.filter(e=>all.some(c=>c.event===e.slug)).map(e=>`<option value="${esc(e.slug)}" ${e.slug===fevent?"selected":""}>${esc(e.name)}</option>`).join("");
+    const pr=prevRun();
+    const rows=all.map(c=>({c,ev:events[c.event]||{name:c.event,journey:"",order:999}})).filter(({c,ev})=>{
+      if(fevent&&c.event!==fevent) return false; if(fkind&&c.kind!==fkind) return false;
+      const r=res(currentRun,c.id); if(filter==="pass"&&r.status!=="pass") return false;
+      return matches(c,ev);
+    }).sort((a,b)=>(a.ev.order||0)-(b.ev.order||0)||a.c.id.localeCompare(b.c.id));
+    let html=`<div class="flat"><table class="cases"><thead><tr><th style="width:64px">ID</th><th style="width:15%">Event</th><th style="width:26%">Case / property</th><th class="exp">Expected</th><th style="width:118px">Status</th><th style="width:20%">Actual / notes</th><th style="width:118px">Evidence</th></tr></thead><tbody>`;
+    let lastJ=null;
+    rows.forEach(({c,ev})=>{
+      if(ev.journey!==lastJ){ html+=`<tr class="jrow"><td colspan="7">${esc(ev.journey||"")}</td></tr>`; lastJ=ev.journey; }
+      const r=res(currentRun,c.id), s=r.status||"notrun", p=pr?res(pr,c.id).status||"notrun":null; const isProp=c.kind==="property";
+      html+=`<tr data-id="${esc(c.id)}" class="${readOnly?"ro":""}">
+        <td class="id">${esc(c.id)}${r.tested?`<small>${esc(r.tested)}</small>`:""}</td>
+        <td class="evcell"><span class="mono">${esc(ev.name)}</span><small>${esc(KINDS.find(k=>k[0]===c.kind)?.[1]||c.kind)}</small></td>
+        <td class="${isProp?"prop":"title"}">${esc(isProp?c.prop:c.title)}${isProp&&c.title?`<div class="steps" style="font-family:var(--sans)">${esc(c.title)}</div>`:""}${c.steps?`<div class="steps">${esc(c.steps)}${c.page?` · <a href="${esc(c.page)}" target="_blank" rel="noopener">page</a>`:""}</div>`:""}${c.disagree?`<div class="steps disagree">Sheet ≠ GTM</div>`:""}</td>
+        <td class="exp">${esc(c.expected)}</td>
+        <td class="stat"><select data-f="status" class="${s}" ${readOnly?"disabled":""}>${STATUSES.map(([v,l])=>`<option value="${v}" ${v===s?"selected":""}>${l}</option>`).join("")}</select>${p!==null?`<div class="prev" title="Previous run">prev: <span class="pill ghost ${p}">${label[p]}</span></div>`:""}</td>
+        <td class="act"><textarea data-f="actual" rows="1" placeholder="—" ${readOnly?"readonly":""}>${esc(r.actual)}</textarea></td>
+        <td class="ev">${shotCell(r)}${r.evidence?`<a href="${esc(r.evidence)}" target="_blank" rel="noopener">open</a> `:""}<input class="link" data-f="evidence" placeholder="link" value="${esc(r.evidence)}" ${readOnly?"readonly":""}></td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+    if(!rows.length) html=`<div class="notice">No test cases match the current filters.</div>`;
+    $("#tree").innerHTML=html; autosizeAll($("#tree"));
+  }
+  function autosize(t){ if(!t.offsetParent) return; t.style.height="auto"; t.style.height=(t.scrollHeight+2)+"px"; }
+  function autosizeAll(root){ (root||document).querySelectorAll("textarea").forEach(autosize); }
+  $("#fevent").addEventListener("change",e=>{fevent=e.target.value;render();});
+  $("#fkind").addEventListener("change",e=>{fkind=e.target.value;render();});
+
+  // ---------- Tracking plan tab ----------
+  let props={}, meta={}, pfilter="all", pquery="", planOpen=new Set();
+  document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t)); $("#view-qa").hidden=t.dataset.tab!=="qa"; $("#view-plan").hidden=t.dataset.tab!=="plan"; if(t.dataset.tab==="plan") renderPlan(); else render(); });
+  function latestResult(caseId){ const l=runList().slice().reverse(); for(const r of l){ const x=results[r.id+"__"+caseId]; if(x&&x.status&&x.status!=="notrun") return Object.assign({run:r},x); } return null; }
+  function propCurrent(ev,p){ const cs=Object.values(cases).filter(c=>c.event===ev.slug&&c.kind==="property"&&(c.prop===p.name||(p.sheetName&&c.prop===p.sheetName)||(p.name&&c.prop&&p.name.startsWith(c.prop.split(" ")[0])))); const hits=cs.map(c=>latestResult(c.id)).filter(Boolean); if(!hits.length) return null; const st=hits.some(h=>h.status==="fail")?"fail":hits.some(h=>h.status==="blocked")?"blocked":"pass"; return {status:st,run:hits[0].run,note:hits.map(h=>h.actual).filter(Boolean)[0]||""}; }
+  function eventCurrent(ev){ const cs=Object.values(cases).filter(c=>c.event===ev.slug); const hits=cs.map(c=>latestResult(c.id)).filter(Boolean); if(!hits.length) return null; const st=hits.some(h=>h.status==="fail")?"fail":hits.some(h=>h.status==="blocked")?"blocked":hits.length===cs.length?"pass":"partial"; return {status:st,run:hits[0].run}; }
+  function pmatch(p){ if(pfilter==="mismatch"&&!p.mismatch) return false; if(pfilter==="undecided"&&!(p.mismatch&&!p.finalName)) return false; if(pquery&&!((p.name||"")+" "+(p.sheetName||"")+" "+(p.description||"")).toLowerCase().includes(pquery)) return false; return true; }
+  function renderPlan(){
+    if($("#view-plan").hidden) return;
+    const evs=Object.values(events).sort((a,b)=>(a.order||0)-(b.order||0));
+    let html="", lastJ=null;
+    evs.forEach(ev=>{
+      const ps=Object.values(props).filter(p=>p.event===ev.slug).sort((a,b)=>(b.required?1:0)-(a.required?1:0)||(a.name||a.sheetName||"").localeCompare(b.name||b.sheetName||""));
+      const shown=ps.filter(pmatch);
+      const evHit=!pquery||ev.name.toLowerCase().includes(pquery);
+      if(!shown.length&&(pfilter!=="all"||(pquery&&!evHit))) return;
+      if(ev.journey!==lastJ){ html+=`<div class="journey">${esc(ev.journey)}</div>`; lastJ=ev.journey; }
+      const cur=eventCurrent(ev); const open=planOpen.has(ev.slug)||pfilter!=="all"||!!pquery;
+      const nameMism=ev.sheetName&&ev.sheetName!==ev.name;
+      const cs=Object.values(cases).filter(c=>c.event===ev.slug).sort((a,b)=>a.id.localeCompare(b.id));
+      const rl=runList().slice().reverse(); const withLoom=rl.map(r=>({r,u:(ev.looms||{})[r.id]||""})); const latest=withLoom[0]; const emb=latest?loomEmbed(latest.u):null;
+      html+=`<section class="event ${open?"open":""}" data-pev="${esc(ev.slug)}">
+        <div class="ev-head" role="button" tabindex="0" aria-expanded="${open}"><span class="caret"></span>
+          <div><div class="ev-name">${esc(ev.finalName||ev.name)}</div><div class="ev-meta">${esc(ev.description||"")}${nameMism?` · <span class="mm">mismatch: sheet says "${esc(ev.sheetName)}"</span>`:""}<br>${ev.tagId?`GTM tag <a href="${GTM}tags/${ev.tagId}" target="_blank" rel="noopener">${esc(ev.tag||ev.tagId)}</a>`:"no GTM tag"}${(ev.triggers||[]).length?` · triggers: ${ev.triggers.map(t=>`<a href="${GTM}triggers/${t.id}" target="_blank" rel="noopener">${esc(t.name)}</a>`).join(", ")}`:""}</div></div>
+          <div class="ev-right">${cur?`<span class="pill ${cur.status}" title="Latest result, ${esc(cur.run.label)}">${label[cur.status]}</span><span class="tag">${esc(cur.run.label)}</span>`:`<span class="pill notrun">Not tested</span>`}<span class="tag">${ps.length} props · ${cs.length} cases</span></div>
+        </div>
+        <div class="ev-body">
+          <div class="names">
+            <div><span>GTM name</span><code>${esc(ev.name)}</code></div>
+            <div><span>Sheet name</span><code>${esc(ev.sheetName||"—")}</code></div>
+            <div><span>Final name</span><input data-pevf="finalName" value="${esc(ev.finalName||"")}" placeholder="${esc(ev.name)}" ${readOnly?"readonly":""}></div>
+            <div><span>Spec status</span><select data-pevf="specStatus" ${readOnly?"disabled":""}>${["planned","implemented","deprecated"].map(x=>`<option ${x===(ev.specStatus||"implemented")?"selected":""}>${x}</option>`).join("")}</select></div>
+          </div>
+          <div class="names"><div style="grid-column:1/-1"><span>Description</span><textarea data-pevf="description" rows="1" ${readOnly?"readonly":""}>${esc(ev.description||"")}</textarea></div></div>
+          <div class="gtm">${ev.tagId?`<span class="lbl">Tag</span><a href="${GTM}tags/${ev.tagId}" target="_blank" rel="noopener">${esc(ev.tag||ev.tagId)}</a>`:""}${(ev.triggers||[]).length?`<span class="lbl">Triggers</span>`+ev.triggers.map(t=>`<a href="${GTM}triggers/${t.id}" target="_blank" rel="noopener">${esc(t.name)}</a>`).join(""):""}</div>
+          ${ev.trigger?`<div class="trigger-box">${esc(ev.trigger)}</div>`:""}
+          <div class="sect"><h3>Properties</h3><table><thead><tr><th>Property</th><th>Source</th><th>Description</th><th>Final</th><th>Current</th></tr></thead><tbody>
+          ${shown.map(p=>{ const c=propCurrent(ev,p); return `<tr data-pid="${esc(p.id)}" class="${readOnly?"ro":""}">
+            <td class="pname">${esc(p.name||"—")}${p.required?" <span class='tag'>required</span>":""}${p.sheetName&&p.sheetName!==p.name?`<small>sheet: ${esc(p.sheetName)}</small>`:""}${p.mismatch?`<small class="mm">mismatch: ${esc(p.mismatch)}</small>`:""}<small>${esc(p.type||"")}${p.examples?" · e.g. "+esc(p.examples):""}</small></td>
+            <td class="src"><textarea data-pf="source" rows="1" ${readOnly?"readonly":""}>${esc(p.source||"")}</textarea></td>
+            <td><textarea data-pf="description" rows="1" ${readOnly?"readonly":""}>${esc(p.description||"")}</textarea></td>
+            <td class="fin"><input class="link" data-pf="finalName" value="${esc(p.finalName||"")}" placeholder="${p.mismatch?"decide…":esc(p.name)}" ${readOnly?"readonly":""}></td>
+            <td class="cur">${c?`<span class="pill ${c.status}" title="${esc(c.note)}">${label[c.status]}</span><small>${esc(c.run.label)}</small>`:`<span class="pill notrun">—</span>`}</td></tr>`}).join("")}
+          </tbody></table><div class="addrow"><button class="btn" data-addprop="${esc(ev.slug)}" ${readOnly?"disabled":""}>Add property</button></div></div>
+          ${cs.length?`<div class="sect plan-cases"><h3>How to test · ${cs.length} cases</h3><table><thead><tr><th style="width:64px">ID</th><th style="width:110px">Type</th><th>Case</th><th class="exp">Expected</th><th style="width:110px">Current</th></tr></thead><tbody>${cs.map(c=>{ const lr=latestResult(c.id); return `<tr><td class="id">${esc(c.id)}</td><td class="src">${esc((KINDS.find(k=>k[0]===c.kind)||[])[1]||c.kind)}</td><td class="title">${esc(c.kind==="property"?c.prop:c.title)}${c.steps?`<div class="steps">${esc(c.steps)}${c.page?` · <a href="${esc(c.page)}" target="_blank" rel="noopener">page</a>`:""}</div>`:""}</td><td class="exp">${esc(c.expected)}</td><td class="cur">${lr?`<span class="pill ${lr.status}" title="${esc(lr.actual||"")}">${label[lr.status]}</span><small>${esc(lr.run.label)}</small>`:`<span class="pill notrun">—</span>`}</td></tr>`}).join("")}</tbody></table></div>`:""}
+          ${latest?`<div class="loom"><div class="loom-in"><label>Loom recording · ${esc(latest.r.label)}</label><input data-evloom="${esc(latest.r.id)}" placeholder="https://www.loom.com/share/…" value="${esc(latest.u)}" ${readOnly?"readonly":""}></div>${emb?`<iframe src="${emb}" allowfullscreen loading="lazy" title="Recording for ${esc(ev.name)}"></iframe>`:""}${withLoom.slice(1).filter(x=>x.u).map(x=>`<div class="tag" style="margin-top:6px">${esc(x.r.label)}: <a href="${esc(x.u)}" target="_blank" rel="noopener">recording</a></div>`).join("")}</div>`:""}
+        </div></section>`;
+    });
+    html+=`<div class="addrow"><button class="btn" id="addevent" ${readOnly?"disabled":""}>Add event</button></div>`;
+    $("#plantree").innerHTML=html; autosizeAll($("#plantree"));
+    renderLex();
+  }
+  function syncItems(){
+    const items=[]; const evs=Object.values(events).sort((a,b)=>(a.order||0)-(b.order||0));
+    evs.forEach(ev=>{ if(ev.slug==="configuration"||ev.slug==="user-profile"||ev.specStatus==="deprecated") return; items.push({kind:"event",name:ev.finalName||ev.name,description:ev.description||"",slug:ev.slug}); });
+    Object.values(props).forEach(p=>{ const nm=(p.finalName||p.name||"").trim(); if(!nm||/[\s+/()]/.test(nm)||p.specStatus==="deprecated") return; if(!events[p.event]||events[p.event].specStatus==="deprecated") return; items.push({kind:"property",resource:p.event==="user-profile"?"User":"Event",name:nm,description:p.description||"",example:p.examples||"",event:p.event}); });
+    const seen=new Set(); return items.filter(i=>{ const k=i.kind+"|"+(i.resource||"")+"|"+i.name; if(seen.has(k)) return false; seen.add(k); return true; });
+  }
+  function renderLex(){
+    const m=meta.lexicon||{}, sy=meta.lexiconSync||{};
+    $("#lexmeta").textContent=(m.pulledAt?"Lexicon pulled "+m.pulledAt:"Lexicon not pulled yet")+" "+(sy.syncedAt?" · last sync "+sy.syncedAt+" ("+(sy.applied||0)+" items)":"");
+    const items=syncItems(); const status=sy.status==="requested"?`<span class="pill blocked">Sync requested ${esc(sy.requestedAt||"")} · ${sy.count||0} items · runs from the QA session</span>`:sy.status==="done"?`<span class="pill pass">Synced ${esc(sy.syncedAt||"")}</span>`:sy.status==="error"?`<span class="pill fail">Last sync failed: ${esc(sy.error||"")}</span>`:`<span class="pill notrun">Not synced yet</span>`;
+    $("#lexbody").innerHTML=`<div class="syncbox"><button class="btn primary" id="lexsync" ${readOnly?"disabled":""}>Sync to Lexicon</button>${status}<span class="tag">${items.length} items: ${items.filter(i=>i.kind==="event").length} events, ${items.filter(i=>i.kind==="property").length} properties (final name wins over GTM name; descriptions and examples go with them)</span></div>
+      <details><summary class="exp" style="cursor:pointer">What will be pushed</summary><div class="synclist">${items.map(i=>`${i.kind==="event"?"event":"prop("+i.resource+")"} · ${esc(i.name)}${i.description?" — "+esc(i.description):""}`).join("<br>")}</div></details>
+      <div class="sect"><h3>Events in Lexicon that are not in the plan</h3><div class="lexlist">${(m.eventsNotInPlan||[]).map(esc).join("<br>")||"none"}</div></div><div class="sect"><h3>Legacy event properties in Lexicon (not sent by the current tags)</h3><div class="lexlist">${(m.legacyEventProperties||[]).map(esc).join("<br>")||"none"}</div></div><div class="sect"><h3>Legacy user properties in Lexicon</h3><div class="lexlist">${(m.legacyUserProperties||[]).map(esc).join("<br>")||"none"}</div></div><p class="exp">The page cannot call the Mixpanel API directly, so the sync is queued here and applied from the QA session (Mixpanel Lexicon API); the status above updates when it has run. Lexicon → plan seeds a new plan and refreshes the lists above.</p>`;
+  }
+  document.addEventListener("click",async e=>{
+    if(!e.target.closest("#view-plan")) return;
+    const chip=e.target.closest(".chip[data-pf]"); if(chip){ pfilter=chip.dataset.pf; document.querySelectorAll(".chip[data-pf]").forEach(c=>c.setAttribute("aria-pressed",c===chip)); renderPlan(); return; }
+    if(e.target.closest("a")||e.target.closest("input,textarea,select")) return;
+    const head=e.target.closest(".ev-head"); if(head){ const sec=head.parentElement; sec.classList.toggle("open"); head.setAttribute("aria-expanded",sec.classList.contains("open")); if(sec.dataset.pev){ if(sec.classList.contains("open")) planOpen.add(sec.dataset.pev); else planOpen.delete(sec.dataset.pev); } autosizeAll(sec); return; }
+    if(readOnly||!db) return;
+    if(e.target.id==="lexsync"){ const items=syncItems(); if(!confirm("Queue "+items.length+" names/descriptions to be pushed to the Mixpanel Lexicon?")) return; await db.doc("meta/lexiconSync").set({status:"requested",requestedAt:new Date().toISOString().slice(0,16).replace("T"," "),count:items.length,items,syncedAt:(meta.lexiconSync||{}).syncedAt||"",applied:(meta.lexiconSync||{}).applied||0}); return; }
+    const ap=e.target.closest("[data-addprop]"); if(ap){ const ev=ap.dataset.addprop; const name=prompt("Property name (as sent to Mixpanel)"); if(!name) return; const id=ev+"__"+name.replace(/[^A-Za-z0-9_\-.~:@+]/g,"_"); await db.doc("properties/"+id).set({event:ev,name,sheetName:"",type:"string",source:"",description:"",examples:"",required:false,mismatch:"",finalName:name,inLexicon:false,specStatus:"planned",lexiconNote:""}); planOpen.add(ev); return; }
+    if(e.target.id==="addevent"){ const name=prompt("Event name"); if(!name) return; const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); const journey=prompt("Journey / section label","New events")||"New events"; await db.doc("events/"+slug).set({name,sheetName:"",journey,order:Object.keys(events).length+50,tag:"",tagId:null,triggers:[],trigger:"",description:"",inLexicon:false,finalName:"",specStatus:"planned",specNote:"",note:"",looms:{}}); planOpen.add(slug); }
+  });
+  $("#pq").addEventListener("input",e=>{pquery=e.target.value.trim().toLowerCase();renderPlan();});
+  $("#pexpand").onclick=()=>{Object.keys(events).forEach(x=>planOpen.add(x));renderPlan();};
+  $("#pcollapse").onclick=()=>{planOpen.clear(); pfilter="all"; pquery=""; $("#pq").value=""; document.querySelectorAll(".chip[data-pf]").forEach(c=>c.setAttribute("aria-pressed",c.dataset.pf==="all")); renderPlan();};
+  document.addEventListener("input",e=>{
+    const el=e.target; if(readOnly) return;
+    if(el.dataset.evloom){ const slug=el.closest("section").dataset.pev; events[slug].looms=Object.assign({},events[slug].looms||{},{[el.dataset.evloom]:el.value}); queueSave("events/"+slug,{looms:events[slug].looms}); return; }
+    if(el.dataset.pf&&!el.classList.contains("chip")){ const id=el.closest("tr").dataset.pid; props[id][el.dataset.pf]=el.value; queueSave("properties/"+id,{[el.dataset.pf]:el.value}); }
+    if(el.dataset.pevf){ const slug=el.closest("section").dataset.pev; events[slug][el.dataset.pevf]=el.value; queueSave("events/"+slug,{[el.dataset.pevf]:el.value}); }
+  });
+  document.addEventListener("change",e=>{ if(e.target.dataset.evloom!==undefined||e.target.dataset.pevf==="finalName"||e.target.dataset.pf==="finalName") renderPlan(); });
+
+  // ---------- Tasks ----------
+  let tasks={};
+  const OWNERS=["GTM","Site dev","GTM + Site dev","Analytics","Client"];
+  function renderTasks(){
+    const list=Object.values(tasks).sort((a,b)=>(a.order||0)-(b.order||0));
+    const open=list.filter(t=>t.status!=="done").length;
+    $("#taskcount").innerHTML=`<span class="pill ${open?"blocked":"pass"}">${open} open</span><span class="tag">${list.length-open} done</span>`;
+    const evOpts=[""].concat(Object.keys(events)).map(x=>`<option value="${esc(x)}">${esc(x?events[x].name:"—")}</option>`).join("");
+    $("#tasklist").innerHTML=list.map(t=>`<tr data-task="${esc(t.id)}" class="${readOnly?"ro":""}" style="${t.status==="done"?"opacity:.6":""}">
+      <td class="id">${esc(t.id)}${t.done?`<small>${esc(t.done)}</small>`:""}</td>
+      <td><textarea data-tf="title" rows="1" ${readOnly?"readonly":""}>${esc(t.title)}</textarea></td>
+      <td><select data-tf="owner" ${readOnly?"disabled":""}>${OWNERS.map(o=>`<option ${o===t.owner?"selected":""}>${o}</option>`).join("")}</select></td>
+      <td><select data-tf="event" ${readOnly?"disabled":""}>${evOpts.replace(`value="${esc(t.event||"")}"`,`value="${esc(t.event||"")}" selected`)}</select></td>
+      <td><select data-tf="status" class="${t.status==="done"?"pass":"blocked"}" ${readOnly?"disabled":""}><option value="open" ${t.status!=="done"?"selected":""}>Open</option><option value="done" ${t.status==="done"?"selected":""}>Done</option></select></td>
+      <td><textarea data-tf="notes" rows="1" placeholder="—" ${readOnly?"readonly":""}>${esc(t.notes||"")}</textarea></td>
+    </tr>`).join("")||`<tr><td colspan="6" class="exp">No tasks yet.</td></tr>`;
+    autosizeAll($("#tasklist"));
+  }
+  $("#addtask").onclick=async()=>{
+    if(!db||readOnly) return; const title=prompt("Task"); if(!title) return;
+    const n=Object.keys(tasks).length+1, id="t"+String(n).padStart(2,"0");
+    await db.doc("tasks/"+id).set({order:n,title,owner:"GTM",status:"open",event:"",notes:"",created:new Date().toISOString().slice(0,10),done:""});
+  };
+  document.addEventListener("input",e=>{
+    const el=e.target; if(readOnly||!el.dataset.tf) return;
+    const id=el.closest("tr").dataset.task; const t=tasks[id]; if(!t) return; t[el.dataset.tf]=el.value;
+    const data={[el.dataset.tf]:el.value};
+    if(el.dataset.tf==="status"){ t.done=el.value==="done"?new Date().toISOString().slice(0,10):""; data.done=t.done; el.className=el.value==="done"?"pass":"blocked"; }
+    queueSave("tasks/"+id,data);
+  });
+  document.addEventListener("click",e=>{
+    const th=e.target.closest("[data-tasks-head]"); if(th){ const sec=th.parentElement; sec.classList.toggle("open"); th.setAttribute("aria-expanded",sec.classList.contains("open")); autosizeAll(sec); return; }
+    const img=e.target.closest("img.shot"); if(img){ $("#lightbox img").src=img.dataset.full; $("#lightbox").classList.add("on"); return; }
+    if(e.target.closest("#lightbox")){ $("#lightbox").classList.remove("on"); return; }
+    if(e.target.closest("#view-plan")) return;
+    const head=e.target.closest(".ev-head");
+    if(head){ const sec=head.parentElement, slug=sec.dataset.ev; sec.classList.toggle("open"); head.setAttribute("aria-expanded",sec.classList.contains("open")); if(sec.classList.contains("open")) openSet.add(slug); else openSet.delete(slug); try{localStorage.setItem("tqa-open",JSON.stringify([...openSet]))}catch(x){} return; }
+    const chip=e.target.closest(".chip[data-f]"); if(chip){ filter=chip.dataset.f; document.querySelectorAll(".chip[data-f]").forEach(c=>c.setAttribute("aria-pressed",c===chip)); render(); }
+  });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#lightbox").classList.remove("on"); if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("ev-head")){e.preventDefault();e.target.click();} });
+  $("#q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render();});
+  $("#run").addEventListener("change",e=>{currentRun=e.target.value;render();});
+  $("#newrun").onclick=async()=>{
+    if(!db||readOnly) return;
+    const lab=prompt("Name for the new run (e.g. Round 2 · after fixes)"); if(!lab) return;
+    const n=runList().length+1, id="run-"+n;
+    await db.doc("runs/"+id).set({id,label:lab,order:n,date:new Date().toISOString().slice(0,10),browser:navigator.userAgent.match(/Chrome\/[\d.]+|Safari\/[\d.]+|Firefox\/[\d.]+/)?.[0]||"",tester:"",gtmVersion:"",previewEnv:"",workspace:"GAM - Mixpanel (131)",notes:""});
+    currentRun=id;
+  };
+
+  let saveTimer=null, pending={};
+  function queueSave(path,data,create){ pending[path]=Object.assign(pending[path]||{},data,{__create:create||pending[path]&&pending[path].__create}); clearTimeout(saveTimer); saveTimer=setTimeout(flush,500); }
+  async function flush(){
+    if(!db) return; const batch=pending; pending={}; $("#saving").textContent="Saving…";
+    try{ for(const p in batch){ const d=Object.assign({},batch[p]); const create=d.__create; delete d.__create;
+        if(create){ const snap=await db.doc(p).get(); if(snap.exists) await db.doc(p).update(d); else await db.doc(p).set(Object.assign({},create,d)); }
+        else await db.doc(p).update(d); }
+      $("#saving").textContent="Saved"; setTimeout(()=>{$("#saving").textContent=""},1500); }
+    catch(err){ $("#saving").textContent="Could not save ("+(err&&err.code||"error")+")"; }
+  }
+  document.addEventListener("input",e=>{ if(e.target.tagName==="TEXTAREA") autosize(e.target); });
+  document.addEventListener("input",e=>{
+    const el=e.target; if(readOnly) return;
+    if(el.dataset.f){ const id=el.closest("tr").dataset.id; const key=currentRun+"__"+id; const r=results[key]=Object.assign({run:currentRun,case:id,status:"notrun",actual:"",evidence:"",gtmShot:"",mpShot:"",tested:""},results[key]||{}); r[el.dataset.f]=el.value;
+      const base={run:currentRun,case:id,status:"notrun",actual:"",evidence:"",gtmShot:"",mpShot:"",tested:""};
+      if(el.dataset.f==="status"){ el.className=el.value; r.tested=new Date().toISOString().slice(0,10); queueSave("results/"+key,{status:el.value,tested:r.tested},base);
+        const sec=el.closest(".event"); const mine=Object.values(cases).filter(x=>x.event===sec.dataset.ev); const st=rollup(mine); const pill=sec.querySelector(".ev-right .pill"); pill.className="pill "+st; pill.textContent=label[st]; sec.querySelector(".ev-right .tag:last-child").textContent=mine.filter(x=>res(currentRun,x.id).status==="pass").length+"/"+mine.length; }
+      else queueSave("results/"+key,{[el.dataset.f]:el.value},base); }
+    if(el.dataset.evf){ const slug=el.closest(".event").dataset.ev; events[slug].looms=Object.assign({},events[slug].looms||{},{[currentRun]:el.value}); queueSave("events/"+slug,{looms:events[slug].looms}); }
+    if(el.dataset.runf){ runs[currentRun][el.dataset.runf]=el.value; queueSave("runs/"+currentRun,{[el.dataset.runf]:el.value}); }
+  });
+  document.addEventListener("change",e=>{ if(e.target.dataset.evf==="loom"||e.target.dataset.f==="evidence") render(); });
+
+  // Local mode: when the page is opened as a file (no artifact runtime) it loads data.js and keeps edits in this browser.
+  function localDb(){
+    if(!window.__SEED) return null;
+    const store=JSON.parse(JSON.stringify(window.__SEED));
+    try{ const ov=JSON.parse(localStorage.getItem("tqa-local")||"{}"); for(const c in ov){ store[c]=Object.assign(store[c]||{},ov[c]); } }catch(e){}
+    const listeners={};
+    const snap=c=>({docs:Object.entries(store[c]||{}).map(([id,d])=>({id,data:()=>d}))});
+    const persist=(c,id)=>{ try{ const ov=JSON.parse(localStorage.getItem("tqa-local")||"{}"); (ov[c]=ov[c]||{})[id]=store[c][id]; localStorage.setItem("tqa-local",JSON.stringify(ov)); }catch(e){ $("#saving").textContent="Browser storage is full: export your data"; } };
+    const emit=c=>(listeners[c]||[]).forEach(cb=>cb(snap(c)));
+    return {
+      local:true,
+      collection(c){ return { onSnapshot(cb){ (listeners[c]=listeners[c]||[]).push(cb); cb(snap(c)); } }; },
+      doc(path){ const [c,id]=path.split("/"); return {
+        async get(){ const d=(store[c]||{})[id]; return {exists:!!d,data:()=>d}; },
+        async set(d){ (store[c]=store[c]||{})[id]=d; persist(c,id); emit(c); },
+        async update(d){ (store[c]=store[c]||{})[id]=Object.assign({},store[c][id]||{},d); persist(c,id); emit(c); } }; },
+      exportJson(){ return JSON.stringify(store,null,1); }
+    };
+  }
+  render();
+  (async()=>{
+    db=(window.claude&&claude.use)?await claude.use("db"):null;
+    if(!db) db=localDb();
+    if(!db){ readOnly=true; const n=$("#notice"); n.hidden=false; n.textContent="Live data is not available in this view, so the tracker is read-only."; render(); return; }
+    if(db.local){ const n=$("#notice"); n.hidden=false; n.innerHTML='Local copy: edits are kept in this browser only. <button class="btn" id="exportjson" style="margin-left:8px">Export data (JSON)</button> <button class="btn" id="resetlocal">Discard local edits</button>';
+      $("#exportjson").onclick=()=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([db.exportJson()],{type:"application/json"})); a.download="tracking-qa-data.json"; a.click(); };
+      $("#resetlocal").onclick=()=>{ if(confirm("Discard the edits saved in this browser and reload the bundled data?")){ localStorage.removeItem("tqa-local"); location.reload(); } }; }
+    const fail=(what)=>err=>{ const n=$("#notice"); n.hidden=false; n.textContent="Could not load "+what+" ("+err.code+")."; };
+    db.collection("runs").onSnapshot(s=>{ runs={}; s.docs.forEach(d=>{runs[d.id]=Object.assign({id:d.id},d.data())}); if(!currentRun||!runs[currentRun]) currentRun=runList().slice(-1)[0]&&runList().slice(-1)[0].id; render(); },fail("runs"));
+    db.collection("events").onSnapshot(s=>{ events={}; s.docs.forEach(d=>{events[d.id]=Object.assign({slug:d.id},d.data())}); render(); },fail("events"));
+    db.collection("cases").onSnapshot(s=>{ cases={}; s.docs.forEach(d=>{cases[d.id]=Object.assign({id:d.id},d.data())}); render(); },fail("cases"));
+    db.collection("properties").onSnapshot(s=>{ props={}; s.docs.forEach(d=>{props[d.id]=Object.assign({id:d.id},d.data())}); renderPlan(); },fail("properties"));
+    db.collection("meta").onSnapshot(s=>{ meta={}; s.docs.forEach(d=>{meta[d.id]=d.data()}); applyConfig(meta.config); render(); renderPlan(); },fail("meta"));
+    db.collection("tasks").onSnapshot(s=>{ tasks={}; s.docs.forEach(d=>{tasks[d.id]=Object.assign({id:d.id},d.data())}); renderTasks(); },fail("tasks"));
+    db.collection("results").onSnapshot(s=>{ results={}; s.docs.forEach(d=>{results[d.id]=d.data()}); render(); },fail("results"));
+  })();
+})();
+</script>

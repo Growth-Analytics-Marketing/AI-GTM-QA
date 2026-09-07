@@ -1,0 +1,22 @@
+{
+ "t01": {
+  "order": 1,
+  "title": "Page Viewed: send cms_content_id only when set (guard in the SDK tag)",
+  "owner": "GTM",
+  "status": "done",
+  "event": "page-viewed",
+  "notes": "Applied in round 2.",
+  "created": "2026-01-10",
+  "done": "2026-01-12"
+ },
+ "t02": {
+  "order": 2,
+  "title": "Search: wait for the results count before tracking, or have the site push it",
+  "owner": "GTM + Site dev",
+  "status": "done",
+  "event": "search",
+  "notes": "GTM side applied.",
+  "created": "2026-01-10",
+  "done": "2026-01-12"
+ }
+}

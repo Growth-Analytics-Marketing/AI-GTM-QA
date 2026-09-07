@@ -1,0 +1,14 @@
+{
+ "config": {
+  "title": "Tracking QA (sample)",
+  "subtitle": "Sample data for an example site. Replace with your own export.",
+  "gtmBase": "",
+  "container": "GTM-XXXXXXX"
+ },
+ "lexicon": {
+  "pulledAt": "",
+  "eventsNotInPlan": [],
+  "legacyEventProperties": [],
+  "legacyUserProperties": []
+ }
+}

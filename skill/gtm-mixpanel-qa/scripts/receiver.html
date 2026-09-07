@@ -1,0 +1,2 @@
+<title>shot-receiver</title><input id=f type=file><pre id=o></pre>
+<script>f.onchange=async e=>{const file=e.target.files[0];const r=new FileReader();r.onload=async()=>{const res=await fetch('/save',{method:'POST',body:JSON.stringify({name:file.name,data:r.result})});o.textContent='saved '+file.name+' '+file.size+' '+res.status;document.title='saved '+file.name};r.readAsDataURL(file)}</script>

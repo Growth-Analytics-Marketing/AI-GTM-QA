@@ -1,0 +1,26 @@
+{
+ "run-1": {
+  "id": "run-1",
+  "label": "Round 1 \u00b7 before fixes",
+  "order": 1,
+  "date": "2026-01-10",
+  "browser": "Chrome (desktop)",
+  "tester": "Claude via Chrome",
+  "gtmVersion": "Workspace preview",
+  "previewEnv": "Tag Assistant",
+  "workspace": "QA workspace",
+  "notes": "Sample data."
+ },
+ "run-2": {
+  "id": "run-2",
+  "label": "Round 2 \u00b7 after fixes",
+  "order": 2,
+  "date": "2026-01-12",
+  "browser": "Chrome (desktop)",
+  "tester": "Claude via Chrome",
+  "gtmVersion": "Workspace preview",
+  "previewEnv": "Tag Assistant",
+  "workspace": "QA workspace",
+  "notes": "Sample data."
+ }
+}
